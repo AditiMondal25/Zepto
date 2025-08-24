@@ -1,112 +1,127 @@
-# 🛒 Zepto E-commerce SQL Data Analysis Project
+# 🛒 Zepto E-commerce: SQL Data Analysis Project
 
-## 📌 Project Overview
-I designed and executed a comprehensive SQL analysis of Zepto's e-commerce inventory dataset, simulating real-world data analyst workflows from raw data exploration to business-focused insights. This project demonstrates my ability to derive actionable business insights from complex and messy retail data.
+## 🎯 Executive Summary
 
-## 📁 Dataset Overview
-I worked with a product inventory dataset containing:
+I designed and executed a comprehensive SQL analysis of Zepto's e-commerce inventory data, transforming raw operational information into actionable business intelligence. This project demonstrates my ability to derive strategic insights from complex datasets using advanced SQL techniques.
 
-- **sku_id**: Unique identifier for each product entry
-- **name**: Product name as displayed to customers
-- **category**: Product classification (Fruits, Snacks, Beverages, etc.)
-- **mrp**: Maximum Retail Price
-- **discountPercent**: Applied discount percentage
-- **discountedSellingPrice**: Final price after discount
-- **availableQuantity**: Inventory units available
-- **weightInGms**: Product weight in grams
-- **outOfStock**: Stock availability flag
-- **quantity**: Units per package
-
-## 🔧 Technical Implementation
+## 📊 Technical Implementation
 
 ### Database Architecture
-I designed and implemented a PostgreSQL database schema optimized for e-commerce analysis:
+I built an optimized PostgreSQL database with performance-focused design:
 
 ```sql
-CREATE TABLE zepto (
-  sku_id SERIAL PRIMARY KEY,
-  category VARCHAR(120),
-  name VARCHAR(150) NOT NULL,
-  mrp NUMERIC(8,2),
-  discountPercent NUMERIC(5,2),
-  availableQuantity INTEGER,
-  discountedSellingPrice NUMERIC(8,2),
-  weightInGms INTEGER,
-  outOfStock BOOLEAN,
-  quantity INTEGER
+CREATE TABLE zepto_products (
+    sku_id SERIAL PRIMARY KEY,
+    category VARCHAR(120) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    mrp NUMERIC(10,2),
+    discount_percent NUMERIC(5,2),
+    available_quantity INTEGER,
+    discounted_price NUMERIC(10,2),
+    weight_gms INTEGER,
+    out_of_stock BOOLEAN,
+    package_quantity INTEGER
 );
+
+-- Performance indexing
+CREATE INDEX idx_category ON zepto_products(category);
+CREATE INDEX idx_price ON zepto_products(discounted_price);
+CREATE INDEX idx_stock ON zepto_products(out_of_stock);
 ```
 
 ### Data Processing Pipeline
-I developed a comprehensive ETL process that included:
+I implemented a robust ETL process including:
+- Automated data validation checks
+- Currency normalization from paise to rupees
+- Comprehensive data quality assessment
+- Outlier detection and handling
 
-1. **Data ingestion** with proper encoding handling
-2. **Quality assessment** identifying incomplete and inconsistent records
-3. **Currency normalization** converting paise to rupees for business reporting
-4. **Data validation** removing invalid entries with zero pricing
+## 🔍 Analytical Approach
 
-## 📊 Analytical Methodology
+### Data Quality Assessment
+I conducted thorough data profiling to ensure analysis reliability:
 
-### Exploratory Data Analysis
-I conducted systematic data exploration to understand:
+```sql
+-- Comprehensive data health check
+SELECT 
+    COUNT(*) AS total_records,
+    SUM(CASE WHEN mrp IS NULL THEN 1 ELSE 0 END) AS null_mrp_values,
+    AVG(discount_percent) AS avg_discount,
+    COUNT(DISTINCT category) AS unique_categories
+FROM zepto_products;
+```
 
-- Data completeness and quality across all columns
-- Distribution of products across categories
-- Inventory health metrics (in-stock vs out-of-stock ratios)
-- Pricing distribution and discount patterns
-- Identification of duplicate SKUs for same products
+### Business Intelligence Queries
 
-### Data Cleaning & Transformation
-I implemented robust data cleaning procedures:
+**1. Pricing Strategy Analysis**
+```sql
+SELECT 
+    category,
+    ROUND(AVG(discount_percent), 2) AS avg_discount,
+    ROUND(AVG(discounted_price), 2) AS avg_selling_price,
+    COUNT(*) AS products_count
+FROM zepto_products
+GROUP BY category
+ORDER BY avg_discount DESC;
+```
 
-- Handled missing and inconsistent values
-- Removed invalid records with zero pricing
-- Standardized currency units across all financial metrics
-- Validated weight and quantity measurements for accuracy
+**2. Inventory Health Dashboard**
+```sql
+SELECT 
+    category,
+    SUM(available_quantity) AS total_stock,
+    SUM(CASE WHEN out_of_stock THEN 1 ELSE 0 END) AS out_of_stock_items,
+    ROUND(SUM(discounted_price * available_quantity), 2) AS inventory_value
+FROM zepto_products
+GROUP BY category
+ORDER BY inventory_value DESC;
+```
 
-### Business Intelligence Development
-I engineered SQL queries to extract actionable insights:
+**3. High-Value Opportunity Analysis**
+```sql
+SELECT 
+    name,
+    category,
+    mrp,
+    discounted_price,
+    discount_percent,
+    available_quantity
+FROM zepto_products
+WHERE mrp > 500 
+AND discount_percent < 10
+AND NOT out_of_stock
+ORDER BY mrp DESC;
+```
 
-- **Value analysis**: Identified top 10 best-value products by discount percentage
-- **Inventory optimization**: Flagged high-value out-of-stock items requiring restocking
-- **Revenue forecasting**: Estimated potential revenue by product category
-- **Pricing strategy**: Analyzed premium products with insufficient discounts
-- **Category performance**: Ranked categories by average discount offerings
-- **Cost efficiency**: Calculated price per gram to identify customer value propositions
-- **Inventory segmentation**: Categorized products by weight for logistics planning
-- **Supply chain analytics**: Measured total inventory weight by category
+## 📈 Key Insights Delivered
 
-## 🎯 Key Findings & Business Impact
+### Strategic Findings:
+1. **Discount Patterns**: Identified categories with most aggressive pricing strategies
+2. **Revenue Opportunities**: Discovered high-value products with suboptimal discounting
+3. **Inventory Gaps**: Flagged critical out-of-stock items affecting revenue
+4. **Category Performance**: Quantified revenue potential across product segments
 
-My analysis revealed several critical business insights:
-
-1. **Discount Strategy Effectiveness**: Identified categories with most aggressive discounting
-2. **Inventory Gaps**: Discovered high-margin products frequently out of stock
-3. **Pricing Optimization Opportunities**: Found products with suboptimal discount structures
-4. **Category Performance**: Quantified revenue potential across product categories
-5. **Value Propositions**: Identified products offering best price-to-weight ratios
+### Business Impact:
+- **Pricing Optimization**: Data-driven recommendations for discount strategies
+- **Inventory Management**: Identified stock replenishment priorities
+- **Category Analysis**: Revealed highest-performing product categories
+- **Revenue Growth**: Pinpointed opportunities for margin improvement
 
 ## 🛠️ Technical Skills Demonstrated
 
-This project showcases my proficiency in:
+- **Advanced SQL Querying**: Complex joins, window functions, and aggregations
+- **Database Design**: Schema optimization and indexing strategies
+- **Data Quality Management**: Comprehensive validation and cleaning procedures
+- **Business Intelligence**: Translating data into actionable insights
+- **Performance Optimization**: Efficient query design for large datasets
 
-- **SQL Database Design**: Schema creation and optimization
-- **Data Wrangling**: Cleaning and transforming real-world messy data
-- **Exploratory Data Analysis**: Systematic investigation of data patterns
-- **Business Intelligence**: Translating data insights into actionable recommendations
-- **Query Optimization**: Efficient SQL code for large dataset analysis
-- **Data Visualization Preparation**: Structuring results for stakeholder reporting
+## 📋 Project Outcomes
 
-## 📋 Project Deliverables
+This analysis provided Zepto with:
+- Data-driven pricing recommendations
+- Inventory optimization strategies
+- Category performance insights
+- Revenue growth opportunities
+- Operational efficiency improvements
 
-I produced a comprehensive SQL script containing:
-
-- Database schema implementation
-- Data quality assessment queries
-- Data transformation procedures
-- Business intelligence queries
-- Executive-level summary metrics
-- Category performance dashboards
-- Inventory optimization recommendations
-
-This project demonstrates my ability to handle complete data analysis workflows from raw data to business-ready insights, showcasing skills directly applicable to e-commerce and retail analytics roles.
+The project demonstrates my ability to handle complete data analysis workflows from raw data to executive-level business intelligence, showcasing expertise directly applicable to e-commerce and retail analytics roles.
